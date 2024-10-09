@@ -1,101 +1,288 @@
-import Image from "next/image";
+"use client"; // Add this line at the top
+import { useEffect, useState } from "react";
+import TossModal from "./TossModal";
+import NoBallModal from "./NoBallModal";
+import Footer from "./Footer"; // Adjust the path as necessary
+import CricketBarChart from "./CricketBarChart"; // Adjust the path as necessary
 
-export default function Home() {
+export default function Page() {
+  const [totalScore, setTotalScore] = useState(0);
+  const [ballCount, setBallCount] = useState(0);
+  const [overNumber, setOverNumber] = useState(1);
+  const [currentOver, setCurrentOver] = useState<string[]>([]);
+  const [currentOverScore, setCurrentOverScore] = useState(0);
+  const [showTossModal, setShowTossModal] = useState(false);
+  const [tossResult, setTossResult] = useState("");
+  const [totalWickets, setTotalWickets] = useState(0); // Add this line
+
+  const [overHistory, setOverHistory] = useState<string[][]>([]); // Stores completed overs
+  const [detailedOverHistory, setDetailedOverHistory] = useState<
+    { over: number; runs: number; wickets: number }[]
+  >([]);
+
+  const [isNoBallModalOpen, setIsNoBallModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (ballCount === 6) {
+      setCurrentOver([...currentOver, "Over Complete"]); // Optional: indicate that the over is complete
+      const timer = setTimeout(() => {
+        completeOver(); // Move to complete over
+      }, 1000); // Delay for visual feedback
+      return () => clearTimeout(timer); // Cleanup the timer on unmount
+    }
+  }, [ballCount]); // Dependency array includes ballCount
+
+  const overColors = [
+    "bg-blue-100",
+    "bg-green-100",
+    "bg-yellow-100",
+    "bg-red-100",
+    "bg-purple-100",
+    "bg-pink-100",
+    "bg-teal-100",
+  ];
+
+  function handeRemoveOver() {
+    const newTotalScore = totalScore - currentOverScore;
+    setTotalScore(newTotalScore);
+    setBallCount(0);
+    setCurrentOver([]); // Clear current over
+  }
+
+  function completeOver() {
+    const newOver = {
+      over: overNumber,
+      runs: currentOverScore,
+      wickets: currentOver.filter((action) => action.includes("Wicket")).length,
+    };
+
+    // Move current over details to detailed over history
+    setDetailedOverHistory([...detailedOverHistory, newOver]);
+
+    // Existing logic for over history
+    setOverHistory([...overHistory, currentOver]);
+    setOverNumber(overNumber + 1);
+    setCurrentOver([]); // Clear current over
+    setCurrentOverScore(0); // Reset current over score
+    setBallCount(0); // Reset ball count
+  }
+
+  const openNoBallModal = () => {
+    setIsNoBallModalOpen(true);
+  };
+
+  const closeNoBallModal = () => {
+    setIsNoBallModalOpen(false);
+  };
+
+  const addNoBallRuns = (runs: number) => {
+    const newTotalScore = totalScore + 1 + runs; // 1 run for No Ball + runs on No Ball
+    const newCurrentOverScore = currentOverScore + 1 + runs;
+    setTotalScore(newTotalScore);
+    setCurrentOverScore(newCurrentOverScore);
+    setCurrentOver([...currentOver, `No Ball + ${runs} runs`]);
+    setIsNoBallModalOpen(false); // Close modal
+  };
+
+  const addNoBallWicket = () => {
+    setCurrentOver([...currentOver, "Wicket on No Ball"]);
+    setIsNoBallModalOpen(false); // Close modal
+  };
+
+  function addRun(run: number) {
+    if (ballCount < 6) {
+      setTotalScore(totalScore + run);
+      setCurrentOverScore(currentOverScore + run);
+      setBallCount(ballCount + 1);
+      setCurrentOver([...currentOver, `${run} runs`]);
+      updateDisplay();
+    }
+  }
+
+  function addWide() {
+    setTotalScore(totalScore + 1); // Add one run for wide
+    setCurrentOver([...currentOver, "Wide"]);
+    setCurrentOverScore(currentOverScore + 1); // Add wide run to the current over score
+    updateDisplay();
+  }
+
+  function addWicket() {
+    if (ballCount < 6) {
+      setBallCount(ballCount + 1);
+      setCurrentOver([...currentOver, "Wicket"]);
+      setTotalWickets(totalWickets + 1); // Increment total wickets
+      updateDisplay();
+    }
+  }
+
+  function updateDisplay() {
+    if (ballCount === 6) {
+      setCurrentOver([...currentOver, "Over Complete"]); // Optional: indicate that the over is complete
+      setTimeout(completeOver, 1000); // Auto-start a new over after 1 second
+    }
+  }
+
+  function handleToss(choice: string) {
+    const result = Math.random() < 0.5 ? "Heads" : "Tails"; // Randomly determine toss result
+    setTossResult(`You chose ${choice}. Toss result is ${result}.`);
+  }
+  function ifBallisSix() {
+    if (ballCount === 6) {
+      completeOver();
+      updateDisplay();
+    }
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <>
+      <div onClick={() => ifBallisSix()} className="bg-gray-100 px-2 py-6">
+        <div className="bg-white rounded-lg shadow-lg p-6 text-center relative">
+          <h1 className="text-xl font-bold text-gray-800 mb-2">
+            Cricket Score Counter
+          </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setShowTossModal(true)}
+            className="absolute top-1 right-1 text-xs bg-green-500 text-white py-1 px-2 rounded hover:bg-green-600"
           >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Toss
+          </button>
+
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-700 mb-0">
+              Total Score: <span>{`${totalScore}/${totalWickets}`}</span>{" "}
+              {/* Updated line */}
+            </h2>
+            <p className="text-lg text-gray-600">
+              Balls: <span>{ballCount}</span> / 6
+            </p>
+          </div>
+
+          <div className="text-red-500 text-lg mb-4"></div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+            <button
+              onClick={() => addRun(0)}
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-800 hover:ring-4"
+            >
+              Dot Ball
+            </button>
+            <button
+              onClick={() => addRun(1)}
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-800 hover:ring-4"
+            >
+              1 Run
+            </button>
+            <button
+              onClick={() => addRun(2)}
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-800 hover:ring-4"
+            >
+              2 Runs
+            </button>
+            <button
+              onClick={() => addRun(3)}
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-800 hover:ring-4"
+            >
+              3 Runs
+            </button>
+            <button
+              onClick={() => addRun(4)}
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-800 hover:ring-4"
+            >
+              4 Runs
+            </button>
+            <button
+              onClick={() => addRun(6)}
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-800 hover:ring-4"
+            >
+              6 Runs
+            </button>
+            <button
+              onClick={addWide}
+              className="bg-orange-500 text-white py-2 px-4 rounded hover:bg-orange-800 hover:ring-4"
+            >
+              Wide
+            </button>
+            <button
+              onClick={openNoBallModal}
+              className="bg-orange-500 text-white py-2 px-4 rounded hover:bg-orange-800 hover:ring-4"
+            >
+              No Ball
+            </button>
+            <button
+              onClick={addWicket}
+              className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-800 hover:ring-4"
+            >
+              Wicket
+            </button>
+          </div>
+
+          <div className="bg-gray-100 p-4 rounded-lg text-left my-4 relative">
+            <h3 className="text-lg font-semibold text-gray-700">This over</h3>
+            <ul className="list-none mt-3 flex gap-2">
+              {currentOver.map((action, index) => (
+                <li
+                  className="border font-semibold bg-sky-300 p-1 rounded-md"
+                  key={index}
+                >
+                  {action}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => handeRemoveOver()}
+              className="bg-red-500 text-white text-xs py-2 px-2 rounded hover:bg-red-800 hover:ring-4 absolute top-0 right-0"
+            >
+              Remove Over
+            </button>
+          </div>
+
+          <div className="bg-gray-100 p-4 rounded-lg text-left">
+            <h3 className="text-lg font-semibold text-gray-700">
+              Over History
+            </h3>
+            <ul className="list-none mt-3">
+              {overHistory.map((over, index) => (
+                <li
+                  className={`border ${
+                    overColors[index % overColors.length]
+                  } py-2 px-1 my-2 font-semibold rounded-md`}
+                  key={index}
+                >
+                  {`Over ${index + 1}: ${over.join(" , ")}`}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+       <div>
+         {/* Display a message if there are no overs completed */}
+         {detailedOverHistory.length === 0 ? (
+          <h1 className="text-lg font-semibold text-gray-700 text-center my-5">
+            Complete a over for graph.
+          </h1>
+        ) : (
+          <CricketBarChart detailedOverHistory={detailedOverHistory} />
+        )}
+       </div>
+
+        <TossModal
+          isOpen={showTossModal}
+          onClose={() => setShowTossModal(false)}
+          onToss={handleToss}
+          tossResult={tossResult}
+        />
+
+        {/* No Ball Modal */}
+        <NoBallModal
+          isOpen={isNoBallModalOpen}
+          onClose={closeNoBallModal}
+          addNoBallRuns={addNoBallRuns}
+          addNoBallWicket={addNoBallWicket}
+        />
+      </div>
+      <Footer />
+    </>
   );
 }
