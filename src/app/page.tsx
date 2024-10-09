@@ -219,7 +219,7 @@ export default function Page() {
 
           <div className="bg-gray-100 p-4 rounded-lg text-left my-4 relative">
             <h3 className="text-lg font-semibold text-gray-700">This over</h3>
-            <ul className="list-none mt-3 flex gap-2">
+            <ul className="list-none mt-3 flex w-full flex-wrap gap-2">
               {currentOver.map((action, index) => (
                 <li
                   className="border font-semibold bg-sky-300 p-1 rounded-md"
