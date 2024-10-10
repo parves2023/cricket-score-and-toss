@@ -4,9 +4,12 @@ import TossModal from "./TossModal";
 import NoBallModal from "./NoBallModal";
 import Footer from "./Footer"; // Adjust the path as necessary
 import CricketBarChart from "./CricketBarChart"; // Adjust the path as necessary
-import { PageTop, PageBottom, PageBreak } from "@fileforge/react-print";
+
 import html2canvas from "html2canvas";
 import html2pdf from 'html2pdf.js';
+import dynamic from "next/dynamic";
+
+
 
 export default function Page() {
   const [totalScore, setTotalScore] = useState(0);
@@ -50,18 +53,25 @@ export default function Page() {
     window.print();
   };
 
-  const handleDownloadPDF = () => {
-    const element = document.getElementById("pageContent");
-    html2pdf()
-      .from(element)
-      .set({
-        margin: 1,
-        filename: "cricket_score_counter.pdf",
-        html2canvas: { scale: 2 },
-        jsPDF: { orientation: "portrait" },
-      })
-      .save();
-  };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Dynamically import html2pdf only on the client-side
+      const html2pdf = require("html2pdf.js");
+      const element = document.getElementById("pageContent");
+      if (element) {
+        html2pdf()
+          .from(element)
+          .set({
+            margin: 1,
+            filename: "cricket_score_counter.pdf",
+            html2canvas: { scale: 2 },
+            jsPDF: { orientation: "portrait" },
+          })
+          .save();
+      }
+    }
+  }, []);
 
   const handleSaveAsImage = () => {
     const element = document.getElementById("pageContent");
@@ -272,7 +282,7 @@ export default function Page() {
             </button>
           </div>
 
-          <PageTop></PageTop>
+        
 
           <div className="bg-gray-100 p-4 rounded-lg text-left">
             <h3 className="text-lg font-semibold text-gray-700">
@@ -304,9 +314,6 @@ export default function Page() {
         )}
        </div>
 
-       <PageBottom></PageBottom>
-       <PageBreak />
-
         <TossModal
           isOpen={showTossModal}
           onClose={() => setShowTossModal(false)}
@@ -336,7 +343,6 @@ export default function Page() {
           Save as Image
         </button>
         <button
-          onClick={handleDownloadPDF}
           className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700"
         >
           Download as PDF
