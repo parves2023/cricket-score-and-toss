@@ -8,8 +8,6 @@ import { PageTop, PageBottom, PageBreak } from "@fileforge/react-print";
 import html2canvas from "html2canvas";
 import html2pdf from 'html2pdf.js';
 
-
-
 export default function Page() {
   const [totalScore, setTotalScore] = useState(0);
   const [ballCount, setBallCount] = useState(0);
@@ -185,7 +183,7 @@ export default function Page() {
             Toss
           </button>
 
-          <div className="mb-6">
+          <div className="mb-5">
             <h2 className="text-xl font-semibold text-gray-700 mb-0">
               Total Score: <span>{`${totalScore}/${totalWickets}`}</span>{" "}
               {/* Updated line */}
@@ -276,8 +274,6 @@ export default function Page() {
 
           <PageTop></PageTop>
 
-
-
           <div className="bg-gray-100 p-4 rounded-lg text-left">
             <h3 className="text-lg font-semibold text-gray-700">
               Over History
@@ -326,7 +322,6 @@ export default function Page() {
           addNoBallWicket={addNoBallWicket}
         />
       </div>
-
      <div className="flex text-sm gap-3 w-[95%] mx-auto items-center justify-center">
      <button
           onClick={handlePrint}
@@ -349,10 +344,7 @@ export default function Page() {
 
 
      </div>
-
       <Footer />
-
-
     </>
   );
 }
