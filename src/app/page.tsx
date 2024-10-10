@@ -14,6 +14,7 @@ import dynamic from "next/dynamic";
 export default function Page() {
   const [totalScore, setTotalScore] = useState(0);
   const [ballCount, setBallCount] = useState(0);
+  const [pdf, setpdf] = useState(false);
   const [overNumber, setOverNumber] = useState(1);
   const [currentOver, setCurrentOver] = useState<string[]>([]);
   const [currentOverScore, setCurrentOverScore] = useState(0);
@@ -55,23 +56,29 @@ export default function Page() {
 
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Dynamically import html2pdf only on the client-side
-      const html2pdf = require("html2pdf.js");
-      const element = document.getElementById("pageContent");
-      if (element) {
-        html2pdf()
-          .from(element)
-          .set({
-            margin: 1,
-            filename: "cricket_score_counter.pdf",
-            html2canvas: { scale: 2 },
-            jsPDF: { orientation: "portrait" },
-          })
-          .save();
+    if (pdf) {
+      if (typeof window !== "undefined") {
+        // Dynamically import html2pdf only on the client-side
+        const html2pdf = require("html2pdf.js");
+        const element = document.getElementById("pageContent");
+        if (element) {
+          html2pdf()
+            .from(element)
+            .set({
+              margin: 1,
+              filename: "cricket_score_counter.pdf",
+              html2canvas: { scale: 2 },
+              jsPDF: { orientation: "portrait" },
+            })
+            .save()
+            .then(() => {
+              setpdf(false); // Reset pdf state after download
+            });
+        }
       }
     }
-  }, []);
+  }, [pdf]);
+
 
   const handleSaveAsImage = () => {
     const element = document.getElementById("pageContent");
@@ -342,11 +349,18 @@ export default function Page() {
         >
           Save as Image
         </button>
+
+
         <button
-          className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700"
-        >
-          Download as PDF
-        </button>
+        onClick={() => {
+          if (!pdf) { // Only set pdf to true if it is currently false
+            setpdf(true);
+          }
+        }}
+        className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700"
+      >
+        Download as PDF
+      </button>
 
 
      </div>
