@@ -25,17 +25,15 @@ export default class CricketBarChart extends PureComponent<CricketBarChartProps>
           data={dataWithCumulative}
           margin={{
             top: 20,
-            right: 30,
-            left: 20,
+            right: 20,
+            left: -10,
             bottom: 5,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="over" label={{ value: 'Overs', position: 'insideBottomLeft', offset: -10, dx: 100 }} />
-          <YAxis label={{ value: 'Runs', angle: -90, position: 'insideLeft' }} />
-          <Tooltip />
+          <XAxis dataKey="over" label={{ value: 'Overs', position: 'insideBottomLeft', offset: 4, dx: 100 }} />
+          <YAxis label={{ value: 'Runs', angle: -90, position: 'insideLeft',offset: 20, dx: 5 }} />
           <Legend />
-
           <Bar dataKey="cumulativeRuns" fill="#82ca9d" name="Cumulative Runs" />
           <Bar dataKey="runs" stackId="a" fill="#413ea0" name="Runs" />
           <Bar dataKey="wickets" stackId="a" fill="#ff0000" name="Wickets" />
